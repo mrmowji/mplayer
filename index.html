@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MPlayer</title>
+    <link href="https://vjs.zencdn.net/7.15.5/video-js.css" rel="stylesheet" />
+    <style>
+      .vjs-text-track-cue {
+        pointer-events: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="file" accept="video/*, .srt" id="file-input" multiple />
+    <div id="video-container">
+      <video
+        id="my-video"
+        class="video-js"
+        controls
+        preload="auto"
+        width="640"
+        height="360"
+      >
+      </video>
+    </div>
+
+    <script src="https://vjs.zencdn.net/7.15.5/video.js"></script>
+    <script>
+      var player = videojs("my-video");
+      var fileInput = document.getElementById("file-input");
+
+      // Add an event listener to the file input element
+      fileInput.addEventListener("change", function (event) {
+        var files = event.target.files;
+        if (files.length === 2) {
+          var videoFile = null;
+          var subtitleFile = null;
+
+          for (var i = 0; i < files.length; i++) {
+            if (files[i].type.startsWith("video/")) {
+              videoFile = files[i];
+            } else if (files[i].name.toLowerCase().endsWith(".vtt")) {
+              subtitleFile = files[i];
+            }
+          }
+
+          if (videoFile && subtitleFile) {
+            // Create blob URLs from the selected files
+            var videoBlobURL = URL.createObjectURL(videoFile);
+            var subtitleBlobURL = URL.createObjectURL(subtitleFile);
+
+            // Set the video source
+            player.src({ type: "video/mp4", src: videoBlobURL });
+
+            // Create a track element for the subtitles
+            var track = document.createElement("track");
+            track.kind = "subtitles";
+            track.label = "Subtitles";
+            track.srclang = "en";
+            track.default = true;
+            track.mode = "showing";
+            track.src = subtitleBlobURL;
+
+            document
+              .querySelector("body")
+              .addEventListener("click", function adjustStyles(event) {
+                if (event.target.parentNode?.classList.contains("vjs-text-track-cue")) {
+                    player.pause();
+                }
+              });
+
+            // Enable the track for displaying subtitles
+            player.addRemoteTextTrack({
+              kind: "subtitles",
+              label: "Subtitles",
+              src: subtitleBlobURL,
+              language: "en",
+              default: true,
+            });
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
