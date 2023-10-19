@@ -4,6 +4,25 @@
     <title>MPlayer</title>
     <link href="https://vjs.zencdn.net/7.15.5/video-js.css" rel="stylesheet" />
     <style>
+      html,
+      body,
+      video,
+      #video-container {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body:fullscreen #my-video {
+        height: 100%;
+        width: 100%;
+      }
+
+      body:fullscreen > input {
+        display: none;
+      }
+
       .vjs-text-track-cue {
         pointer-events: auto;
       }
@@ -19,8 +38,7 @@
         preload="auto"
         width="640"
         height="360"
-      >
-      </video>
+      ></video>
     </div>
 
     <script src="https://vjs.zencdn.net/7.15.5/video.js"></script>
@@ -51,6 +69,18 @@
             // Set the video source
             player.src({ type: "video/mp4", src: videoBlobURL });
 
+            player.controlBar.fullscreenToggle.handleClick = function () {
+              if (!document.fullscreenElement) {
+                document.body.requestFullscreen();
+              } else {
+                document.exitFullscreen();
+              }
+            };
+
+            player.doubleClick = function () {
+                player.controlBar.fullscreenToggle.click();
+            };
+
             // Create a track element for the subtitles
             var track = document.createElement("track");
             track.kind = "subtitles";
@@ -63,8 +93,12 @@
             document
               .querySelector("body")
               .addEventListener("click", function adjustStyles(event) {
-                if (event.target.parentNode?.classList.contains("vjs-text-track-cue")) {
-                    player.pause();
+                if (
+                  event.target.parentNode?.classList.contains(
+                    "vjs-text-track-cue"
+                  )
+                ) {
+                  player.pause();
                 }
               });
 
