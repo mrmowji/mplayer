@@ -7,19 +7,29 @@
       html,
       body,
       video,
-      #video-container {
+      #video-container,
+      #my-video {
         height: 100%;
         width: 100%;
         margin: 0;
         padding: 0;
       }
 
-      body:fullscreen #my-video {
-        height: 100%;
-        width: 100%;
+      #video-container {
+        flex-grow: 1;
       }
 
-      body:fullscreen > input {
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+
+      body:fullscreen #video-container,
+      body:fullscreen #my-video {
+        height: 100%;
+      }
+
+      body:fullscreen > label {
         display: none;
       }
 
@@ -28,22 +38,47 @@
       }
 
       .vjs-fullscreen-control,
-      .vjs-picture-in-picture-control {
+      .vjs-picture-in-picture-control,
+      .vjs-big-play-button {
         display: none !important;
+      }
+
+      /* Hide the default file input element */
+      input[type="file"] {
+        display: none;
+      }
+
+      /* Style the label to look like a button */
+      label.file-input-button {
+        display: block;
+        padding: 10px 20px;
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        text-align: center;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+      }
+
+      /* Optional: Style the label on hover or focus */
+      label.file-input-button:hover,
+      label.file-input-button:focus {
+        background-color: #2980b9;
       }
     </style>
   </head>
   <body>
-    <input type="file" accept="video/*, .srt, .vtt" id="file-input" multiple />
+    <label for="file-input" class="file-input-button">
+      Choose your video and its subtitle (SRT)
+      <input
+        type="file"
+        accept="video/*, .srt, .vtt, .mkv"
+        id="file-input"
+        multiple
+      />
+    </label>
     <div id="video-container">
-      <video
-        id="my-video"
-        class="video-js"
-        controls
-        preload="auto"
-        width="640"
-        height="360"
-      ></video>
+      <video id="my-video" class="video-js" controls preload="auto"></video>
     </div>
 
     <script src="https://vjs.zencdn.net/7.15.5/video.js"></script>
