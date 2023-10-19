@@ -57,7 +57,7 @@
         border: none;
         cursor: pointer;
         text-align: center;
-        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
       }
 
       /* Optional: Style the label on hover or focus */
@@ -102,9 +102,18 @@
       // Add an event listener to the file input element
       fileInput.addEventListener("change", function (event) {
         var files = event.target.files;
-        if (files.length === 2) {
+        if (files.length <= 2) {
           var videoFile = null;
           var subtitleFile = null;
+          player.addRemoteTextTrack({});
+          var textTracks = player.textTracks();
+          textTracks.tracks_.forEach(function (track) {
+            player.removeRemoteTextTrack(track);
+          });
+          var trackElement = document.querySelector("track");
+          if (trackElement) {
+            trackElement.remove();
+          }
 
           for (var i = 0; i < files.length; i++) {
             if (files[i].type.startsWith("video/")) {
@@ -120,49 +129,55 @@
             // Set the video source
             player.src({ type: "video/mp4", src: videoBlobURL });
 
-            // Create a track element for the subtitles
-            var track = document.createElement("track");
-            track.kind = "subtitles";
-            track.label = "Subtitle";
-            track.srclang = "en";
-            track.default = true;
-            track.mode = "showing";
-            track.src = subtitleBlobURL;
+            if (subtitleBlobURL) {
+              // Create a track element for the subtitles
+              var track = document.createElement("track");
+              track.kind = "subtitles";
+              track.label = "Subtitle";
+              track.srclang = "en";
+              track.default = true;
+              track.mode = "showing";
+              track.src = subtitleBlobURL;
 
-            document
-              .querySelector("body")
-              .addEventListener("click", function adjustStyles(event) {
-                if (
-                  event.target.parentNode?.classList.contains(
-                    "vjs-text-track-cue"
-                  )
-                ) {
-                  player.pause();
-                }
+              document
+                .querySelector("body")
+                .addEventListener("click", function adjustStyles(event) {
+                  if (
+                    event.target.parentNode?.classList.contains(
+                      "vjs-text-track-cue"
+                    )
+                  ) {
+                    player.pause();
+                  }
+                });
+
+              // Enable the track for displaying subtitles
+              player.addRemoteTextTrack({
+                kind: "subtitles",
+                label: "Subtitles",
+                src: subtitleBlobURL,
+                language: "en",
+                default: true,
               });
-
-            // Enable the track for displaying subtitles
-            player.addRemoteTextTrack({
-              kind: "subtitles",
-              label: "Subtitles",
-              src: subtitleBlobURL,
-              language: "en",
-              default: true,
-            });
+            }
 
             player.play();
           }
 
-          if (videoFile && subtitleFile) {
-            const webvtt = new WebVTTConverter(subtitleFile);
-            webvtt
-              .getURL()
-              .then((url) => {
-                preparePlayer(url);
-              })
-              .catch((err) => {
-                console.log(err);
-              });
+          if (videoFile) {
+            if (subtitleFile) {
+              const webvtt = new WebVTTConverter(subtitleFile);
+              webvtt
+                .getURL()
+                .then((url) => {
+                  preparePlayer(url);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else {
+              preparePlayer();
+            }
           }
         }
       });
