@@ -26,10 +26,15 @@
       .vjs-text-track-cue {
         pointer-events: auto;
       }
+
+      .vjs-fullscreen-control,
+      .vjs-picture-in-picture-control {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
-    <input type="file" accept="video/*, .srt" id="file-input" multiple />
+    <input type="file" accept="video/*, .srt, .vtt" id="file-input" multiple />
     <div id="video-container">
       <video
         id="my-video"
@@ -42,8 +47,21 @@
     </div>
 
     <script src="https://vjs.zencdn.net/7.15.5/video.js"></script>
+    <script src="srt2vtt.js"></script>
     <script>
-      var player = videojs("my-video");
+      function toggleFullscreen(player) {
+        if (!document.fullscreenElement) {
+          document.body.requestFullscreen();
+          player.is;
+        } else {
+          document.exitFullscreen();
+        }
+      }
+      var player = videojs("my-video", {
+        userActions: {
+          doubleClick: toggleFullscreen,
+        },
+      });
       var fileInput = document.getElementById("file-input");
 
       // Add an event listener to the file input element
@@ -56,35 +74,21 @@
           for (var i = 0; i < files.length; i++) {
             if (files[i].type.startsWith("video/")) {
               videoFile = files[i];
-            } else if (files[i].name.toLowerCase().endsWith(".vtt")) {
+            } else if (files[i].name.toLowerCase().endsWith(".srt")) {
               subtitleFile = files[i];
             }
           }
 
-          if (videoFile && subtitleFile) {
-            // Create blob URLs from the selected files
+          function preparePlayer(subtitleBlobURL) {
             var videoBlobURL = URL.createObjectURL(videoFile);
-            var subtitleBlobURL = URL.createObjectURL(subtitleFile);
 
             // Set the video source
             player.src({ type: "video/mp4", src: videoBlobURL });
 
-            player.controlBar.fullscreenToggle.handleClick = function () {
-              if (!document.fullscreenElement) {
-                document.body.requestFullscreen();
-              } else {
-                document.exitFullscreen();
-              }
-            };
-
-            player.doubleClick = function () {
-                player.controlBar.fullscreenToggle.click();
-            };
-
             // Create a track element for the subtitles
             var track = document.createElement("track");
             track.kind = "subtitles";
-            track.label = "Subtitles";
+            track.label = "Subtitle";
             track.srclang = "en";
             track.default = true;
             track.mode = "showing";
@@ -110,6 +114,20 @@
               language: "en",
               default: true,
             });
+
+            player.play();
+          }
+
+          if (videoFile && subtitleFile) {
+            const webvtt = new WebVTTConverter(subtitleFile);
+            webvtt
+              .getURL()
+              .then((url) => {
+                preparePlayer(url);
+              })
+              .catch((err) => {
+                console.log(err);
+              });
           }
         }
       });
