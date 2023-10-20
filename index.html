@@ -38,9 +38,24 @@
       sizes="192x192"
       href="./android-icon-192x192.png"
     />
-    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="96x96" href="./favicon-96x96.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="./favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicon-16x16.png"
+    />
     <link rel="manifest" href="./manifest.json" />
     <meta name="msapplication-TileColor" content="#ffffff" />
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
@@ -137,6 +152,39 @@
       var player = videojs("my-video", {
         userActions: {
           doubleClick: toggleFullscreen,
+          hotkeys: function (e) {
+            if (e.ctrlKey || e.metaKey) {
+              // Check if Ctrl (or Cmd on macOS) is pressed
+              if (e.which === 39) {
+                // Right arrow key
+                this.currentTime(this.currentTime() + 10); // Skip forward by 10 seconds
+              } else if (e.which === 37) {
+                // Left arrow key
+                this.currentTime(this.currentTime() - 10); // Skip backward by 10 seconds
+              }
+            } else {
+              if (e.which === 37) {
+                // Left arrow key
+                this.currentTime(this.currentTime() - 3); // Skip backward by 3 seconds
+              } else if (e.which === 39) {
+                // Right arrow key
+                this.currentTime(this.currentTime() + 3); // Skip forward by 3 seconds
+              } else if (e.which === 38) {
+                // Up arrow key
+                this.volume(this.volume() + 0.1); // Increase volume by 10%
+              } else if (e.which === 40) {
+                // Down arrow key
+                this.volume(this.volume() - 0.1); // Decrease volume by 10%
+              } else if (e.which === 32) {
+                // Space key
+                if (this.paused()) {
+                  this.play(); // Play the video
+                } else {
+                  this.pause(); // Pause the video
+                }
+              }
+            }
+          },
         },
       });
       var fileInput = document.getElementById("file-input");
